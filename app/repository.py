@@ -4,8 +4,8 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from models.message import Message
-from schemas.message_bulk_delete_request import MessageBulkDeleteRequest
+from app.models import Message
+
 
 
 class MessageRepository:
@@ -19,8 +19,8 @@ class MessageRepository:
         """Create and persist a message."""
         try:
             message = Message(
-                recipient=request.recipient,
-                sender=request.sender,
+                recipient=request.recipient.lower(),
+                sender=request.sender.lower(),
                 content=request.content,
             )
 
@@ -33,10 +33,6 @@ class MessageRepository:
         except SQLAlchemyError:
             self.db.rollback()
             raise
-
-    def get_all(self) -> list[Message]:
-        """Return all messages."""
-        return self.db.scalars(select(Message)).all()
 
     def get_unread_messages(self, recipient: str) -> list[Message]:
         """Return unread messages for a recipient."""
@@ -78,11 +74,11 @@ class MessageRepository:
             self.db.rollback()
             raise
 
-    def bulk_delete(self, request: MessageBulkDeleteRequest) -> int:
+    def bulk_delete(self, message_ids: list[UUID]) -> int:
         """Delete multiple messages and return the deleted row count."""
         try:
             deleted_count = self.db.query(Message).filter(
-                Message.id.in_(request.message_ids)
+                Message.id.in_(message_ids)
             ).delete(synchronize_session=False)
 
             self.db.commit()

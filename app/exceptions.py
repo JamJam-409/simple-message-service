@@ -1,3 +1,6 @@
+from fastapi import Request
+from fastapi.responses import JSONResponse
+
 class AppException(Exception):
     """Base exception for application errors returned by the API."""
 
@@ -27,3 +30,13 @@ class InvalidIndexRangeException(AppException):
             code="INVALID_INDEX_RANGE",
             message="stop_index must be greater than or equal to start_index",
         )
+
+async def app_exception_handler(request: Request, exc: AppException):
+    """Convert application exceptions into a consistent JSON response."""
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "code": exc.code,
+            "message": exc.message,
+        },
+    )

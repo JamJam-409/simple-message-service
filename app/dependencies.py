@@ -1,9 +1,9 @@
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from core.database import get_db
-from repository.message_repository import MessageRepository
-from service.message_service import MessageService
+from app.database import get_db
+from app.repository import MessageRepository
+from app.service import MessageService
 
 
 def get_message_service(

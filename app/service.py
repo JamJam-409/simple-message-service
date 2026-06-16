@@ -1,11 +1,8 @@
 from uuid import UUID
 
-from core.exceptions import InvalidIndexRangeException, MessageNotFoundException
-from repository.message_repository import MessageRepository
-from schemas.message_action_response import MessageActionResponse
-from schemas.message_bulk_delete_request import MessageBulkDeleteRequest
-from schemas.message_create_request import MessageCreateRequest
-from schemas.message_get_response import MessageGetResponse
+from app.exceptions import InvalidIndexRangeException, MessageNotFoundException
+from app.repository import MessageRepository
+from app.schemas import MessageCreateRequest, MessageBulkDeleteRequest, MessageActionResponse, MessageGetResponse
 
 
 class MessageService:
@@ -18,11 +15,6 @@ class MessageService:
     def get_unread_messages(self, recipient: str) -> list[MessageGetResponse]:
         """Retrieve unread messages for a recipient."""
         messages = self.repository.get_unread_messages(recipient)
-        return [MessageGetResponse.model_validate(message) for message in messages]
-
-    def get_messages(self) -> list[MessageGetResponse]:
-        """Retrieve all messages."""
-        messages = self.repository.get_all()
         return [MessageGetResponse.model_validate(message) for message in messages]
 
     def get_messages_by_index(
@@ -57,5 +49,7 @@ class MessageService:
 
     def bulk_delete(self, request: MessageBulkDeleteRequest) -> MessageActionResponse:
         """Delete multiple messages and return an action response."""
-        self.repository.bulk_delete(request)
-        return MessageActionResponse(message="Messages deleted successfully")
+        deleted_count = self.repository.bulk_delete(request.message_ids)
+        return MessageActionResponse(
+            message=f"{deleted_count} of {len(request.message_ids)} messages deleted successfully"
+        )

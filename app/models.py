@@ -1,9 +1,8 @@
-from datetime import datetime
 from uuid import uuid4
 
 from sqlalchemy import Boolean, Column, DateTime, String, Text, UUID, func, Index
 
-from core.database import Base
+from app.database import Base
 
 
 class Message(Base):
@@ -19,4 +18,6 @@ class Message(Base):
     is_read = Column(Boolean, default=False, nullable=False)
 
     # Create composite index for recipient and is_read
-    Index("idx_recipient_is_read", "recipient", "is_read")
+    __table_args__ = (
+        Index("idx_recipient_is_read", "recipient", "is_read"),
+    )
