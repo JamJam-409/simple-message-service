@@ -2,7 +2,7 @@ from uuid import UUID
 
 from fastapi import Response
 
-from app.exceptions import InvalidIndexRangeException, MessageNotFoundException
+from app.exceptions import InvalidIndexRangeException
 from app.repository import MessageRepository
 from app.schemas import MessageCreateRequest, MessageBulkDeleteRequest, MessageActionResponse, MessageGetResponse
 

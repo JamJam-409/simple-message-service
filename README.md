@@ -28,7 +28,7 @@ The `Message` model represents a message in the system. It has the following fie
 - `recipient_id`: The ID of the user who is the recipient of the message in lower case.
 - `content`: The content of the message.
 - `is_read`: A boolean indicating whether the message has been read or not.
-- `created_at`: A timestamp indicating when the message was created.
+- `created_at`: A UTC timestamp indicating when the message was created.
 
 ### composite index:
 - `idx_recipient_is_read`: Index on `recipient` and `is_read` fields.
@@ -38,10 +38,7 @@ The `Message` model represents a message in the system. It has the following fie
 1. Clone the repository.
 2. Run 
 ```bash
-  docker-compose up -d db
-  pip install -r requirements.txt
-  alembic upgrade head
-  uvicorn app.main:app --reload
+  docker-compose up --build
   ```
 ### Curl examples
 ```bash

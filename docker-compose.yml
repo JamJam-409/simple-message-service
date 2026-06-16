@@ -4,7 +4,12 @@ services:
   api:
     build: .
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    ports:
+        - "8000:8000"
+    environment:
+        DATABASE_URL: postgresql://postgres:postgres@db:5432/messages
   db:
     image: postgres:latest
     container_name: messages_db
@@ -17,6 +22,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
