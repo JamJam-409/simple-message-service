@@ -13,7 +13,7 @@ The project is structured with a clear separation of concerns, including models,
 
 ## API Endpoints
 - `POST /messages/`: Create a new message.
-- `GET /messages/{recipient}/unread`: Retrieve unread messages for a specific user.
+- `GET /messages/{recipient}/unread`: Retrieve unread messages for a specific user. **When getting unread messages, the messages will be marked as read and won't be returned in subsequent requests.**
 - `GET /messages/{recipient}`: Retrieve messages for a specific user with pagination support.
 - `DELETE /messages/{message_id}/`: Delete messages based on message ID.
 - `DELETE /messages/`: Delete messages in bulk based on a list of message IDs.
@@ -36,4 +36,25 @@ The `Message` model represents a message in the system. It has the following fie
 
 ## Setup Instructions
 1. Clone the repository.
-2. Run `docker-compose up` to start.
+2. Run 
+```bash
+  docker-compose up -d db
+  pip install -r requirements.txt
+  alembic upgrade head
+  uvicorn app.main:app --reload
+  ```
+### Curl examples
+```bash
+  # create
+  curl -X POST localhost:8000/messages/ -H 'Content-Type: application/json' \
+    -d '{"sender":"bob","recipient":"alice","content":"hello"}'
+  # unread (marks read)
+  curl localhost:8000/messages/alice/unread
+  # by index (time-ordered)
+  curl 'localhost:8000/messages/alice?start_index=0&stop_index=10'
+  # delete one
+  curl -X DELETE localhost:8000/messages/<uuid>
+  # bulk delete
+  curl -X DELETE localhost:8000/messages/ -H 'Content-Type: application/json' \
+    -d '{"message_ids":["<uuid1>","<uuid2>"]}'
+  ```

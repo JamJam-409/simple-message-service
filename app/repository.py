@@ -1,7 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import select, true
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.models import Message
@@ -24,26 +23,22 @@ class MessageRepository:
         )
 
         self.db.add(message)
-        self.db.commit()
+        self.db.flush()
         self.db.refresh(message)
 
         return message
 
     def get_unread_messages(self, recipient: str) -> list[Message]:
         """Return unread messages for a recipient."""
-        messages = list(
-            self.db.scalars(
-                select(Message).where(
-                    Message.recipient == recipient,
-                    Message.is_read.is_(False)
-                )
-            ).all()
+        statement = (
+            update(Message)
+            .where(Message.recipient == recipient, Message.is_read.is_(False))
+            .values(is_read=True)
+            .returning(Message)
+            .execution_options(synchronize_session=False)
         )
-        for message in messages:
-            message.is_read = True
-
-
-        return messages
+        unread_messages = self.db.execute(statement).scalars().all()
+        return unread_messages
 
 
     def delete(self, message_id: UUID) -> int:
@@ -52,7 +47,6 @@ class MessageRepository:
             Message.id == message_id
         ).delete(synchronize_session=False)
 
-        self.db.commit()
         return deleted_count
 
 
@@ -63,7 +57,6 @@ class MessageRepository:
             Message.id.in_(message_ids)
         ).delete(synchronize_session=False)
 
-        self.db.commit()
         return deleted_count
 
 
@@ -76,7 +69,7 @@ class MessageRepository:
         """Return recipient messages between optional start and stop indexes."""
         query = select(Message).where(
             Message.recipient == recipient
-        ).order_by(Message.created_at).offset(start_index)
+        ).order_by(Message.created_at,Message.id).offset(start_index)
 
         # Set limit when stop index exists
         if stop_index is not None:

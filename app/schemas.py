@@ -17,9 +17,9 @@ class MessageBulkDeleteRequest(BaseModel):
 class MessageCreateRequest(BaseModel):
     """Request body for creating a message."""
 
-    sender: str
-    recipient: str
-    content: str
+    sender: str = Field(min_length=1, max_length=100)
+    recipient: str = Field(min_length=1, max_length=100)
+    content: str = Field(min_length=1, max_length=5000)
 
 class MessageGetResponse(BaseModel):
     """Response schemas for returning message details."""

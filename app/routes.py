@@ -12,7 +12,7 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=MessageActionResponse)
+@router.post("/",status_code=201)
 async def create_message(
         request: MessageCreateRequest,
         service: MessageService = Depends(get_message_service),
@@ -45,7 +45,7 @@ async def get_messages_by_index(
     )
 
 
-@router.delete("/{message_id}", response_model=MessageActionResponse)
+@router.delete("/{message_id}", status_code=204)
 async def delete_message(
         message_id: UUID,
         service: MessageService = Depends(get_message_service),

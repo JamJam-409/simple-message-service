@@ -1,5 +1,7 @@
 from uuid import UUID
 
+from fastapi import Response
+
 from app.exceptions import InvalidIndexRangeException, MessageNotFoundException
 from app.repository import MessageRepository
 from app.schemas import MessageCreateRequest, MessageBulkDeleteRequest, MessageActionResponse, MessageGetResponse
@@ -34,18 +36,16 @@ class MessageService:
         )
         return [MessageGetResponse.model_validate(message) for message in messages]
 
-    def create_message(self, request: MessageCreateRequest) -> MessageActionResponse:
+    def create_message(self, request: MessageCreateRequest) -> Response:
         """Create a message and return an action response."""
         self.repository.create(request)
-        return MessageActionResponse(message="Message created successfully")
+        return Response(status_code=201)
 
-    def delete_message(self, message_id: UUID) -> MessageActionResponse:
+    def delete_message(self, message_id: UUID) -> Response:
         """Delete a message and return an action response."""
-        deleted_count = self.repository.delete(message_id)
-        if deleted_count == 0:
-            raise MessageNotFoundException()
+        self.repository.delete(message_id)
 
-        return MessageActionResponse(message="Message deleted successfully")
+        return Response(status_code=204)
 
     def bulk_delete(self, request: MessageBulkDeleteRequest) -> MessageActionResponse:
         """Delete multiple messages and return an action response."""
