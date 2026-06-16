@@ -20,4 +20,5 @@ class Message(Base):
     # Create composite index for recipient and is_read
     __table_args__ = (
         Index("idx_recipient_is_read", "recipient", "is_read"),
+        Index("idx_recipient_created_at", "recipient", "created_at"),
     )

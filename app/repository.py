@@ -1,11 +1,11 @@
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, true
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.models import Message
-
+from app.schemas import MessageActionResponse, MessageCreateRequest
 
 
 class MessageRepository:
@@ -15,24 +15,19 @@ class MessageRepository:
         """Initialize the repository with a database session."""
         self.db = db
 
-    def create(self, request):
+    def create(self, request: MessageCreateRequest):
         """Create and persist a message."""
-        try:
-            message = Message(
-                recipient=request.recipient.lower(),
-                sender=request.sender.lower(),
-                content=request.content,
-            )
+        message = Message(
+            recipient=request.recipient.lower(),
+            sender=request.sender.lower(),
+            content=request.content,
+        )
 
-            self.db.add(message)
-            self.db.commit()
-            self.db.refresh(message)
+        self.db.add(message)
+        self.db.commit()
+        self.db.refresh(message)
 
-            return message
-
-        except SQLAlchemyError:
-            self.db.rollback()
-            raise
+        return message
 
     def get_unread_messages(self, recipient: str) -> list[Message]:
         """Return unread messages for a recipient."""
@@ -44,49 +39,33 @@ class MessageRepository:
                 )
             ).all()
         )
-        # should not change db status in a get method
+        for message in messages:
+            message.is_read = True
+
+
         return messages
 
-    def mark_as_read(self, message_id: UUID) -> Message | None:
-        """Mark a message as read if it exists."""
-        message = self.db.get(Message, message_id)
-
-        if message is None:
-            return None
-
-        message.is_read = True
-        self.db.commit()
-        self.db.refresh(message)
-
-        return message
 
     def delete(self, message_id: UUID) -> int:
         """Delete one message by id and return the deleted row count."""
-        try:
-            deleted_count = self.db.query(Message).filter(
-                Message.id == message_id
-            ).delete(synchronize_session=False)
+        deleted_count = self.db.query(Message).filter(
+            Message.id == message_id
+        ).delete(synchronize_session=False)
 
-            self.db.commit()
-            return deleted_count
+        self.db.commit()
+        return deleted_count
 
-        except SQLAlchemyError:
-            self.db.rollback()
-            raise
+
 
     def bulk_delete(self, message_ids: list[UUID]) -> int:
         """Delete multiple messages and return the deleted row count."""
-        try:
-            deleted_count = self.db.query(Message).filter(
-                Message.id.in_(message_ids)
-            ).delete(synchronize_session=False)
+        deleted_count = self.db.query(Message).filter(
+            Message.id.in_(message_ids)
+        ).delete(synchronize_session=False)
 
-            self.db.commit()
-            return deleted_count
+        self.db.commit()
+        return deleted_count
 
-        except SQLAlchemyError:
-            self.db.rollback()
-            raise
 
     def get_messages_by_index(
         self,

@@ -13,7 +13,7 @@ router = APIRouter(
 
 
 @router.post("/", response_model=MessageActionResponse)
-def create_message(
+async def create_message(
         request: MessageCreateRequest,
         service: MessageService = Depends(get_message_service),
 ):
@@ -22,7 +22,7 @@ def create_message(
 
 
 @router.get("/{recipient}/unread", response_model=list[MessageGetResponse])
-def get_unread_messages(
+async def get_unread_messages(
         recipient: str,
         service: MessageService = Depends(get_message_service),
 ):
@@ -31,7 +31,7 @@ def get_unread_messages(
 
 
 @router.get("/{recipient}", response_model=list[MessageGetResponse])
-def get_messages_by_index(
+async def get_messages_by_index(
         recipient: str,
         start_index: int = Query(0, description="Start index", ge=0),
         stop_index: int | None = Query(None, description="End index", ge=0),
@@ -46,7 +46,7 @@ def get_messages_by_index(
 
 
 @router.delete("/{message_id}", response_model=MessageActionResponse)
-def delete_message(
+async def delete_message(
         message_id: UUID,
         service: MessageService = Depends(get_message_service),
 ):
@@ -55,7 +55,7 @@ def delete_message(
 
 
 @router.delete("/", response_model=MessageActionResponse)
-def bulk_delete(
+async def bulk_delete(
         request: MessageBulkDeleteRequest,
         service: MessageService = Depends(get_message_service),
 ):

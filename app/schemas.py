@@ -10,9 +10,9 @@ class MessageActionResponse(BaseModel):
     message: str
 
 class MessageBulkDeleteRequest(BaseModel):
-    """Request body for deleting multiple messages."""
+    """Request body for deleting multiple messages. Max limit for UUID in request is 100"""
 
-    message_ids: list[UUID]
+    message_ids: list[UUID] = Field(..., max_length=100)
 
 class MessageCreateRequest(BaseModel):
     """Request body for creating a message."""
