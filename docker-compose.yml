@@ -1,0 +1,22 @@
+name: message_app
+
+services:
+#  api:
+#    build: .
+#    depends_on:
+#      - db
+  db:
+    image: postgres:latest
+    container_name: messages_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: messages
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/
+
+volumes:
+  postgres_data:
